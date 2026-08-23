@@ -1,0 +1,66 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Windows Registry",
+  "scopeName": "source.reg",
+  "patterns": [
+    { "include": "#header" },
+    { "include": "#comments" },
+    { "include": "#keys" },
+    { "include": "#values" }
+  ],
+  "repository": {
+    "header": {
+      "patterns": [
+        {
+          "name": "meta.preprocessor.reg",
+          "match": "^(Windows Registry Editor Version 5\\.00|REGEDIT4)\\s*$"
+        }
+      ]
+    },
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.semicolon.reg", "match": "^\\s*;.*$" },
+        { "name": "comment.line.number-sign.reg", "match": "^\\s*#.*$" }
+      ]
+    },
+    "keys": {
+      "patterns": [
+        {
+          "name": "meta.section.reg",
+          "match": "^(\\[)(-?)(HKEY_(?:CLASSES_ROOT|CURRENT_USER|LOCAL_MACHINE|USERS|CURRENT_CONFIG))((?:\\\\[^\\]\\r\\n]+)*)(\\])$",
+          "captures": {
+            "1": { "name": "punctuation.definition.section.begin.reg" },
+            "2": { "name": "keyword.operator.delete.reg" },
+            "3": { "name": "support.constant.root-key.reg" },
+            "4": { "name": "entity.name.section.reg" },
+            "5": { "name": "punctuation.definition.section.end.reg" }
+          }
+        }
+      ]
+    },
+    "values": {
+      "patterns": [
+        {
+          "begin": "^(?:(@)|(\"(?:[^\"\\\\]|\\\\.)*\"))\\s*(=)",
+          "beginCaptures": {
+            "1": { "name": "variable.language.default-value.reg" },
+            "2": { "name": "variable.other.value-name.reg" },
+            "3": { "name": "keyword.operator.assignment.reg" }
+          },
+          "end": "(?<![\\\\\\r\\n])\\r?$",
+          "patterns": [
+            { "name": "keyword.operator.delete.reg", "match": "^-\\s*$" },
+            { "name": "storage.type.reg", "match": "\\b(?:dword|hex(?:\\([0-9a-fA-F]+\\))?):" },
+            {
+              "match": "^(\\s*)([0-9a-fA-F]{2})(?=,|\\s|$)",
+              "captures": { "2": { "name": "constant.numeric.hex.reg" } }
+            },
+            { "name": "constant.numeric.hex.reg", "match": "(?i)(?<=dword:)[0-9a-f]{8}|(?<=[:,])(?:[0-9a-f]{2})(?=,|\\s|$)" },
+            { "name": "string.quoted.double.reg", "begin": "\"", "end": "\"", "patterns": [{ "name": "constant.character.escape.reg", "match": "\\\\[\\\\\"]" }] },
+            { "name": "constant.character.escape.line-continuation.reg", "match": "\\\\(?=\\r?$)" }
+          ]
+        }
+      ]
+    }
+  }
+}

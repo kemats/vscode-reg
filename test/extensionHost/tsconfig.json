@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "rootDir": ".",
+    "outDir": "out",
+    "noEmit": false,
+    "types": ["node", "vscode"]
+  },
+  "include": ["suite.ts"]
+}

@@ -1,0 +1,16 @@
+.github/**
+.vscode/**
+.gitignore
+src/**
+native/vscode-reg-native/**
+native/src/**
+native/build/**
+native/CMakeLists.txt
+scripts/**
+test/**
+tsconfig.json
+vitest.config.mts
+package-lock.json
+**/*.map
+*.vsix
+node_modules/**

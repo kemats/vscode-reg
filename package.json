@@ -1,0 +1,181 @@
+{
+  "name": "vscode-reg",
+  "displayName": "Registry Hive Viewer",
+  "description": "Syntax highlighting for .reg files and a read-only offline registry hive viewer with language model tools.",
+  "version": "0.0.1",
+  "publisher": "KeiichiMatsui",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "readme": "README.md",
+  "author": {
+    "name": "Keiichi Matsui"
+  },
+  "keywords": [
+    "registry",
+    "hive"
+  ],
+  "categories": [
+    "Programming Languages",
+    "Visualization"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "reg",
+        "aliases": [
+          "Windows Registry",
+          "reg"
+        ],
+        "extensions": [
+          ".reg"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "reg",
+        "scopeName": "source.reg",
+        "path": "./syntaxes/reg.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "vscode-reg.openHive",
+        "title": "Registry: Open Hive File",
+        "icon": "$(database)"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "vscode-reg.hiveViewer",
+        "displayName": "Registry Hive Viewer",
+        "selector": [
+          {
+            "filenamePattern": "*.hiv"
+          },
+          {
+            "filenamePattern": "*.hive"
+          },
+          {
+            "filenamePattern": "NTUSER.DAT"
+          },
+          {
+            "filenamePattern": "UsrClass.dat"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
+    "languageModelTools": [
+      {
+        "name": "registry_read_hive",
+        "displayName": "Read Registry Hive",
+        "toolReferenceName": "readRegistryHive",
+        "modelDescription": "Read subkeys and values from an offline Windows registry hive without mounting it or requiring administrator privileges.",
+        "canBeReferencedInPrompt": true,
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Absolute path to the hive file."
+            },
+            "key": {
+              "type": "string",
+              "description": "Registry key path relative to the hive root. Empty means root."
+            }
+          },
+          "required": [
+            "path"
+          ]
+        }
+      },
+      {
+        "name": "registry_search_hive",
+        "displayName": "Search Registry Hive",
+        "toolReferenceName": "searchRegistryHive",
+        "modelDescription": "Search key paths, value names, and textual value data in an offline Windows registry hive. Results are bounded and read-only.",
+        "canBeReferencedInPrompt": true,
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Absolute path to the hive file."
+            },
+            "query": {
+              "type": "string",
+              "description": "Case-insensitive literal text to find."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "default": 100
+            }
+          },
+          "required": [
+            "path",
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "registry_query_hive",
+        "displayName": "Query Registry Hive",
+        "toolReferenceName": "queryRegistryHive",
+        "modelDescription": "Query an offline hive cache with a safe SQL-like WHERE expression. Fields: kind, key/path/key_path, name/value_name, type/value_type, type_code, size/value_size, data, last_write/lastWrite (ISO 8601 key timestamp). Operators: AND, OR, NOT, IN, LIKE, GLOB, IS NULL, comparisons. Examples: kind = 'key' AND last_write >= '2026-01-01T00:00:00Z'; data LIKE '%Visual C++%'; path LIKE 'Microsoft\\Windows\\CurrentVersion\\WINEVT%' AND name = 'Enabled' AND data LIKE '1 (%'. DWORD data is indexed as display text such as '1 (0x00000001)'.",
+        "canBeReferencedInPrompt": true,
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Absolute path to the hive file."
+            },
+            "where": {
+              "type": "string",
+              "description": "Safe SQL-like WHERE expression without the WHERE keyword. Use last_write with an ISO 8601 timestamp for key update times; data is display text (for example, DWORD 1 is '1 (0x00000001)')."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "default": 100
+            }
+          },
+          "required": [
+            "path",
+            "where"
+          ]
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "build": "npm run build:native && npm run build:extension",
+    "build:native": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-native.ps1",
+    "build:extension": "esbuild src/extension.ts --bundle --platform=node --external:vscode --outfile=dist/extension.js --sourcemap",
+    "watch": "esbuild src/extension.ts --bundle --platform=node --external:vscode --outfile=dist/extension.js --sourcemap --watch",
+    "check": "tsc --noEmit && tsc -p test/tsconfig.json && tsc -p test/extensionHost/tsconfig.json",
+    "test": "vitest run test/unit",
+    "test:native": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-native.ps1",
+    "test:integration": "vitest run test/integration",
+    "test:extension": "tsc -p test/extensionHost/tsconfig.json && node test/extensionHost/runTests.js",
+    "test:all": "npm run test && npm run test:native && npm run test:integration && npm run test:extension",
+    "package": "npm run build && vsce package --allow-missing-repository"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/vscode": "^1.105.0",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^3.6.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.10"
+  }
+}
