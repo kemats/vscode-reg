@@ -15,11 +15,28 @@ jobs:
   build:
     runs-on: windows-2025-vs2026
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
+      - name: Install WDK 26100
+        shell: pwsh
+        run: |
+          $installer = Join-Path $env:RUNNER_TEMP 'wdksetup.exe'
+          Invoke-WebRequest 'https://go.microsoft.com/fwlink/?linkid=2335869' -OutFile $installer
+          $signature = Get-AuthenticodeSignature $installer
+          if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'O=Microsoft Corporation') {
+            throw 'The WDK installer does not have a valid Microsoft signature.'
+          }
+          $process = Start-Process $installer -ArgumentList '/features', '+', '/quiet', '/norestart' -Wait -PassThru
+          if ($process.ExitCode -notin 0, 3010) { throw "WDK installation failed with exit code $($process.ExitCode)." }
+          $kitRoot = "${env:ProgramFiles(x86)}\Windows Kits\10"
+          if (-not (Test-Path "$kitRoot\Include\10.0.26100.0\km\offreg.h") -or
+              -not (Test-Path "$kitRoot\Lib\10.0.26100.0\km\x64\offreg.lib") -or
+              -not (Test-Path "$kitRoot\Redist\10.0.26100.0\offreg\x64\offreg.dll")) {
+            throw 'The WDK Offline Registry payload was not installed.'
+          }
       - run: npm ci
       - run: npm run check
       - run: npm run build
