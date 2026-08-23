@@ -45,6 +45,7 @@
     <OutDir>$(ProjectDir)build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)build\obj\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>vscode-reg-native</TargetName>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <OffregRuntime>$(WindowsSdkDir)Redist\$(WindowsTargetPlatformVersion)\offreg\x64\offreg.dll</OffregRuntime>
   </PropertyGroup>
   <ItemDefinitionGroup>
