@@ -104,7 +104,7 @@ Prerequisites:
 
 - Windows x64
 - Node.js 22
-- Visual Studio with the C++ x64 build tools
+- Visual Studio 2026 with the C++ x64 build tools (v145)
 - Windows Driver Kit containing the Offline Registry Library
 
 ```powershell
@@ -120,7 +120,7 @@ npm run package
 
 Unit tests run in Node with Vitest and as a native C++ test executable. Integration tests generate a temporary offline hive with the Offline Registry API and exercise the built native helper end to end. Extension Host tests launch VS Code and verify activation, command registration, and custom editor opening. Run `npm run build` before the integration and Extension Host tests.
 
-The native project is available directly as `native/vscode-reg-native/vscode-reg-native.vcxproj`. It statically links the Visual C++ runtime and locates the newest installed WDK `offreg.h`, x64 `offreg.lib`, and redistributable x64 `offreg.dll`. CI is pinned to the GitHub Actions `windows-2022` image because that image includes the required WDK.
+The native project is available directly as `native/vscode-reg-native/vscode-reg-native.vcxproj`. It statically links the Visual C++ runtime and locates the newest installed WDK `offreg.h`, x64 `offreg.lib`, and redistributable x64 `offreg.dll`. CI uses the GitHub Actions `windows-2025-vs2026` image and installs the WDK before building.
 
 ## Release
 
