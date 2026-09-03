@@ -78,7 +78,7 @@
         "name": "registry_read_hive",
         "displayName": "Read Registry Hive",
         "toolReferenceName": "readRegistryHive",
-        "modelDescription": "Read subkeys and values from an offline Windows registry hive without mounting it or requiring administrator privileges.",
+        "modelDescription": "Read subkeys and values from an offline Windows registry hive without mounting it or requiring administrator privileges. Results include openUri fields. When citing a returned key or value, use its openUri as the target of a Markdown link so the user can open that exact registry location.",
         "canBeReferencedInPrompt": true,
         "inputSchema": {
           "type": "object",
@@ -101,7 +101,7 @@
         "name": "registry_search_hive",
         "displayName": "Search Registry Hive",
         "toolReferenceName": "searchRegistryHive",
-        "modelDescription": "Search key paths, value names, and textual value data in an offline Windows registry hive. Results are bounded and read-only.",
+        "modelDescription": "Search key paths, value names, and textual value data in an offline Windows registry hive. Results are bounded and read-only. Each result includes an openUri field. When citing a result, use openUri as the target of a Markdown link so the user can open that exact registry location.",
         "canBeReferencedInPrompt": true,
         "inputSchema": {
           "type": "object",
@@ -131,7 +131,7 @@
         "name": "registry_query_hive",
         "displayName": "Query Registry Hive",
         "toolReferenceName": "queryRegistryHive",
-        "modelDescription": "Query an offline hive cache with a safe SQL-like WHERE expression. Fields: kind, key/path/key_path, name/value_name, type/value_type, type_code, size/value_size, data, last_write/lastWrite (ISO 8601 key timestamp). Operators: AND, OR, NOT, IN, LIKE, GLOB, IS NULL, comparisons. Examples: kind = 'key' AND last_write >= '2026-01-01T00:00:00Z'; data LIKE '%Visual C++%'; path LIKE 'Microsoft\\Windows\\CurrentVersion\\WINEVT%' AND name = 'Enabled' AND data LIKE '1 (%'. DWORD data is indexed as display text such as '1 (0x00000001)'.",
+        "modelDescription": "Query an offline hive cache with a safe SQL-like WHERE expression. Fields: kind, key/path/key_path, name/value_name, type/value_type, type_code, size/value_size, data, last_write/lastWrite (ISO 8601 key timestamp). Operators: AND, OR, NOT, IN, LIKE, GLOB, IS NULL, comparisons. Examples: kind = 'key' AND last_write >= '2026-01-01T00:00:00Z'; data LIKE '%Visual C++%'; path LIKE 'Microsoft\\Windows\\CurrentVersion\\WINEVT%' AND name = 'Enabled' AND data LIKE '1 (%'. DWORD data is indexed as display text such as '1 (0x00000001)'. Each result includes openUri; use it as a Markdown link target whenever citing that registry location.",
         "canBeReferencedInPrompt": true,
         "inputSchema": {
           "type": "object",

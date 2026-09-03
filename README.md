@@ -14,6 +14,7 @@ VS Code extension for read-only viewing of offline Windows registry hive files.
 - Recursive `.reg` export of the selected key from its tree context menu.
 - Full binary-value inspection as hex, ASCII, UTF-16LE, the Windows active code page, GUID, integer, and valid FILETIME interpretations.
 - Language model tools for listing keys, literal search, and restricted queries.
+- Clickable registry-location links in Copilot responses that open the referenced hive key or value in the viewer.
 - No hive mounting, administrator privileges, or registry mutation.
 
 Use **Registry: Open Hive File** to open hives with conventional names such as `SYSTEM`, `SOFTWARE`, `NTUSER.DAT`, `.hiv`, and `.hive` files.
@@ -93,7 +94,9 @@ Offline Registry exposes a key's last-write timestamp, which is shown as selecte
 | `registry_search_hive` | Perform a bounded, case-insensitive literal search | `path`: absolute hive file path; `query`: text to find | `limit`: 1–500, default 100 |
 | `registry_query_hive` | Run an allowlisted SQL-like WHERE expression against the cache | `path`: absolute hive file path; `where`: expression without the `WHERE` keyword | `limit`: 1–500, default 100 |
 
-All tools require an absolute hive file path and are read-only.
+All tools require an absolute hive file path and are read-only. Tool results include `openUri` fields for returned keys and values. Copilot can use these fields as Markdown link targets when citing registry evidence. Clicking such a `vscode://KeiichiMatsui.vscode-reg/open?...` link opens the hive viewer directly and selects the referenced key or value. The path, key, and value are encoded in the URI; links should therefore be shared only where exposing those names and paths is appropriate.
+
+Registry location links are semantic deep links implemented by this custom editor. Unlike text-file links, they identify a hive-relative key and optional value rather than a line and column. Other custom editors can provide comparable navigation, but each editor's extension must define and handle its own location URI.
 
 ## Build
 

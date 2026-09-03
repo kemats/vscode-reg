@@ -16,6 +16,7 @@ export function activate(context: vscode.ExtensionContext): void {
       webviewOptions: { retainContextWhenHidden: true },
       supportsMultipleEditorsPerDocument: false,
     }),
+    vscode.window.registerUriHandler({ handleUri: uri => editor.handleUri(uri) }),
     vscode.commands.registerCommand('vscode-reg.openHive', async () => {
       const selection = await vscode.window.showOpenDialog({
         canSelectFiles: true,

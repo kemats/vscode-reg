@@ -19,6 +19,15 @@ export async function run(): Promise<void> {
 
   const hivePath = process.env.VSCODE_REG_TEST_HIVE;
   assert.ok(hivePath, 'VSCODE_REG_TEST_HIVE was not provided.');
+
+  const toolResult = await vscode.lm.invokeTool('registry_read_hive', { input: { path: hivePath }, toolInvocationToken: undefined });
+  const textPart = toolResult.content.find(part => part instanceof vscode.LanguageModelTextPart);
+  assert.ok(textPart instanceof vscode.LanguageModelTextPart, 'Registry tool did not return text content.');
+  const listing = JSON.parse(textPart.value) as { openUri?: string; values?: { openUri?: string }[] };
+  assert.ok(listing.openUri?.startsWith(`${vscode.env.uriScheme}://${extensionId}/open?`), 'Registry key link was not returned.');
+  assert.ok(listing.values?.every(value => value.openUri?.startsWith(`${vscode.env.uriScheme}://${extensionId}/open?`)), 'A registry value link was not returned.');
+  console.log('Language model deep links verified.');
+
   const hiveUri = vscode.Uri.file(hivePath);
   await vscode.commands.executeCommand('vscode.openWith', hiveUri, viewType);
 

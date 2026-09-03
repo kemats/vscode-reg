@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { HiveSessionPool } from './hiveClient';
+import { HiveLocation, parseHiveLocationUri } from './hiveLinks';
 
 class HiveDocument implements vscode.CustomDocument {
   constructor(readonly uri: vscode.Uri, private readonly pool: HiveSessionPool) {}
@@ -7,7 +9,23 @@ class HiveDocument implements vscode.CustomDocument {
 }
 
 export class HiveEditorProvider implements vscode.CustomReadonlyEditorProvider<HiveDocument> {
+  private readonly panels = new Map<string, vscode.WebviewPanel>();
+  private readonly readyPanels = new WeakSet<vscode.WebviewPanel>();
+  private readonly pendingLocations = new Map<string, HiveLocation>();
+
   constructor(private readonly pool: HiveSessionPool, private readonly context: vscode.ExtensionContext, private readonly output: vscode.LogOutputChannel) {}
+
+  async handleUri(uri: vscode.Uri): Promise<void> {
+    const location = parseHiveLocationUri(uri.path, uri.query);
+    if (!location || !path.isAbsolute(location.path) || location.path.length > 32767 || location.key.length > 32767 || (location.value?.length ?? 0) > 16383) {
+      void vscode.window.showErrorMessage('The registry hive link is invalid.');
+      return;
+    }
+    const key = this.documentKey(vscode.Uri.file(location.path));
+    this.pendingLocations.set(key, location);
+    await vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(location.path), 'vscode-reg.hiveViewer');
+    this.deliverLocation(key);
+  }
 
   openCustomDocument(uri: vscode.Uri): HiveDocument {
     return new HiveDocument(uri, this.pool);
@@ -15,6 +33,12 @@ export class HiveEditorProvider implements vscode.CustomReadonlyEditorProvider<H
 
   async resolveCustomEditor(document: HiveDocument, panel: vscode.WebviewPanel): Promise<void> {
     this.output.info(`Opening hive editor for ${document.uri.fsPath}`);
+    const documentKey = this.documentKey(document.uri);
+    this.panels.set(documentKey, panel);
+    panel.onDidDispose(() => {
+      if (this.panels.get(documentKey) === panel) { this.panels.delete(documentKey); }
+      this.pendingLocations.delete(documentKey);
+    });
     panel.webview.options = { enableScripts: true };
     panel.webview.html = this.html(panel.webview, document.uri);
 
@@ -22,6 +46,11 @@ export class HiveEditorProvider implements vscode.CustomReadonlyEditorProvider<H
       try {
         if (message.type === 'clientError') {
           this.output.error(`Webview error for ${document.uri.fsPath}: ${message.message}`);
+          return;
+        }
+        if (message.type === 'ready') {
+          this.readyPanels.add(panel);
+          this.deliverLocation(documentKey);
           return;
         }
         if (message.type === 'inputName') {
@@ -77,6 +106,18 @@ export class HiveEditorProvider implements vscode.CustomReadonlyEditorProvider<H
         panel.webview.postMessage({ type: 'error', requestId: message.requestId, message: text });
       }
     });
+  }
+
+  private documentKey(uri: vscode.Uri): string {
+    return path.resolve(uri.fsPath).toLowerCase();
+  }
+
+  private deliverLocation(documentKey: string): void {
+    const panel = this.panels.get(documentKey);
+    const location = this.pendingLocations.get(documentKey);
+    if (!panel || !location || !this.readyPanels.has(panel)) { return; }
+    this.pendingLocations.delete(documentKey);
+    void panel.webview.postMessage({ type: 'navigate', key: location.key, value: location.value });
   }
 
   private async sharedFavorites(): Promise<{ name: string; path: string }[]> {
@@ -555,12 +596,14 @@ document.querySelectorAll('input[name="viewMode"]').forEach(input => input.addEv
 document.addEventListener('click', event => { if (!event.target.closest('#treeContextMenu')) hideTreeContextMenu(); if (!event.target.closest('.dropdown-menu')) hideDropdowns(); });
 document.addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') { event.preventDefault(); openSearch(); } else if (event.key === 'Escape' && favoriteMenu.classList.contains('open')) { hideDropdowns(); event.preventDefault(); } else if (event.key === 'Escape' && treeContextMenu.classList.contains('open')) { hideTreeContextMenu(); event.preventDefault(); } });
 window.addEventListener('message', event => {
-  const message = event.data; const operation = pending.get(message.requestId); if (!operation) return; pending.delete(message.requestId);
+  const message = event.data;
+  if (message.type === 'navigate') { navigateTo(String(message.key || '').replace(/^\\+|\\+$/g, ''), true, message.value === undefined ? undefined : String(message.value)); return; }
+  const operation = pending.get(message.requestId); if (!operation) return; pending.delete(message.requestId);
   if (message.type === 'error') operation.reject(new Error(message.message)); else operation.resolve(message.data);
 });
 window.addEventListener('error', event => vscode.postMessage({ type: 'clientError', message: event.message + (event.filename ? ' at ' + event.filename + ':' + event.lineno + ':' + event.colno : '') }));
 window.addEventListener('unhandledrejection', event => vscode.postMessage({ type: 'clientError', message: 'Unhandled promise rejection: ' + (event.reason?.stack || event.reason || 'Unknown error') }));
-loadRoot();
+loadRoot().then(() => vscode.postMessage({ type: 'ready' }));
 </script>
 </body>
 </html>`;
