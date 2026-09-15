@@ -2,7 +2,7 @@
   "name": "vscode-reg",
   "displayName": "Registry Hive Viewer",
   "description": "Syntax highlighting for .reg files and a read-only offline registry hive viewer with language model tools.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "KeiichiMatsui",
   "license": "MIT",
   "repository": {

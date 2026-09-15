@@ -70,6 +70,10 @@ jobs:
         with:
           name: vscode-reg-vsix
           path: release
+      - name: Publish to Visual Studio Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx --yes @vscode/vsce@3.9.2 publish --packagePath release/*.vsix
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
