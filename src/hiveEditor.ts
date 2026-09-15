@@ -187,6 +187,7 @@ button:hover { background: var(--vscode-button-hoverBackground); }
 .list-toolbar label { white-space: nowrap; }
 .path { position: sticky; top: 34px; z-index: 2; min-height: 30px; padding: 7px 10px; border-bottom: 1px solid var(--vscode-panel-border); background: var(--vscode-editor-background); font-family: var(--vscode-editor-font-family); overflow-wrap: anywhere; }
 ul { list-style: none; margin: 0; padding: 0; }
+.tree { width: max-content; min-width: 100%; }
 .tree ul { padding-left: 16px; }
 .node-row { display: flex; align-items: center; height: 24px; padding-right: 6px; white-space: nowrap; cursor: default; }
 .node-row:hover { background: var(--vscode-list-hoverBackground); }
@@ -197,7 +198,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .twisty { width: 20px; text-align: center; flex: none; color: var(--vscode-descriptionForeground); cursor: pointer; }
 .twisty.leaf { cursor: default; opacity: .45; }
 .key-icon { width: 17px; color: var(--vscode-symbolIcon-keyForeground, #d7ba7d); }
-.node-label { overflow: hidden; text-overflow: ellipsis; }
+.node-label { flex: none; }
 table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 th { position: sticky; top: 0; z-index: 1; text-align: left; font-weight: 600; background: var(--vscode-editor-background); border-bottom: 1px solid var(--vscode-panel-border); }
 th, td { height: 27px; padding: 4px 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-right: 1px solid var(--vscode-panel-border); }
