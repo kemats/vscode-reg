@@ -289,6 +289,8 @@ let searchInProgress = false;
 let history = [];
 let historyIndex = -1;
 let favorites = [];
+let treeTypeAheadText = '';
+let treeTypeAheadTime = 0;
 const pending = new Map();
 const listRequests = new Map();
 
@@ -396,7 +398,16 @@ function bindTreeRow(row) {
     if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) { event.preventDefault(); select(row, row.dataset.path); const bounds = row.getBoundingClientRect(); showTreeContextMenu(bounds.left + 24, bounds.bottom); return; }
     const visible = [...tree.querySelectorAll('.node-row')].filter(item => item.offsetParent !== null);
     const index = visible.indexOf(row); let target;
-    if (event.key === 'ArrowDown') target = visible[index + 1];
+    if (!event.ctrlKey && !event.altKey && !event.metaKey && !event.isComposing && event.key.length === 1 && event.key !== ' ') {
+      const now = Date.now();
+      const key = event.key.toLocaleLowerCase();
+      const continuing = now - treeTypeAheadTime <= 1000;
+      const cycling = continuing && treeTypeAheadText.length > 0 && [...treeTypeAheadText].every(character => character === key);
+      treeTypeAheadText = cycling ? key : (continuing ? treeTypeAheadText : '') + key;
+      treeTypeAheadTime = now;
+      const start = continuing && !cycling ? index : index + 1;
+      target = [...visible.slice(start), ...visible.slice(0, start)].find(item => item.querySelector('.node-label')?.textContent.toLocaleLowerCase().startsWith(treeTypeAheadText));
+    } else if (event.key === 'ArrowDown') target = visible[index + 1];
     else if (event.key === 'ArrowUp') target = visible[index - 1];
     else if (event.key === 'ArrowRight') { if (row.parentElement.getAttribute('aria-expanded') !== 'true') toggle(row.parentElement, true); else target = row.parentElement.querySelector(':scope > ul > li > .node-row'); }
     else if (event.key === 'ArrowLeft') { if (row.parentElement.getAttribute('aria-expanded') === 'true') toggle(row.parentElement, false); else target = row.parentElement.parentElement?.closest('li')?.querySelector(':scope > .node-row'); }
