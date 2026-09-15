@@ -177,7 +177,7 @@
     "package": "npm run build && vsce package --allow-missing-repository"
   },
   "devDependencies": {
-    "@types/node": "^26.5.0",
+    "@types/node": "^26.5.1",
     "@types/vscode": "1.105.0",
     "@vscode/test-electron": "^3.1.0",
     "@vscode/vsce": "^3.6.0",
