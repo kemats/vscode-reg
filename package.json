@@ -5,6 +5,10 @@
   "version": "0.0.2",
   "publisher": "KeiichiMatsui",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kemats/vscode-reg.git"
+  },
   "engines": {
     "vscode": "^1.105.0"
   },
