@@ -2,6 +2,8 @@
 
 VS Code extension for read-only viewing of offline Windows registry hive files.
 
+![Registry Hive Viewer](docs/images/screenshot.png)
+
 ## Features
 
 - Syntax highlighting for Registry Editor `.reg` files.
